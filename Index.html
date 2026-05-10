@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA Case Tracker · Leou Productivity Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface2: #f1f0ee;
+    --border: rgba(55,53,47,0.09);
+    --border-md: rgba(55,53,47,0.16);
+    --text: #37352f;
+    --text-muted: #787774;
+    --text-hint: #acaba8;
+    --accent: #0f7b6c;
+    --accent-light: #e8f5f3;
+    --accent-text: #085c51;
+    --red: #c4432a;
+    --red-light: #fdecea;
+    --red-text: #9e2e1b;
+    --amber: #b35c00;
+    --amber-light: #fff3e0;
+    --amber-text: #8a4500;
+    --blue: #1e6bb8;
+    --blue-light: #e8f0fb;
+    --blue-text: #154f8c;
+    --purple: #5c38c7;
+    --purple-light: #eeebfa;
+    --purple-text: #432c9e;
+    --gray-tag: #e8e8e5;
+    --gray-tag-text: #555;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --radius: 6px;
+    --radius-lg: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: #f0efed;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; fill: white; }
+
+  .logo-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .logo-sub { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+
+  .sidebar-section { padding: 4px 8px; margin-bottom: 4px; }
+  .sidebar-label { font-size: 11px; font-weight: 600; color: var(--text-hint); letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 8px 4px; }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    transition: background 0.1s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .sidebar-item:hover { background: rgba(55,53,47,0.06); color: var(--text); }
+  .sidebar-item.active { background: rgba(55,53,47,0.09); color: var(--text); font-weight: 500; }
+  .sidebar-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .stats-mini {
+    margin: auto 0 0;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stats-mini-label { font-size: 11px; color: var(--text-hint); margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .stats-row { display: flex; flex-direction: column; gap: 6px; }
+
+  .stat-mini-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .stat-mini-item span:first-child { color: var(--text-muted); }
+  .stat-mini-num { font-weight: 600; font-family: var(--mono); font-size: 11px; }
+
+  /* ─── MAIN ─── */
+  .main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 8px; }
+  .page-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .breadcrumb { font-size: 13px; color: var(--text-hint); }
+  .breadcrumb span { color: var(--text-muted); }
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+    border: none;
+    outline: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--accent-text); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-md);
+  }
+
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  .btn-danger {
+    background: var(--red-light);
+    color: var(--red-text);
+    border: none;
+  }
+
+  .btn-danger:hover { background: #fad0cc; }
+
+  /* ─── CONTENT AREA ─── */
+  .content {
+    padding: 32px;
+    flex: 1;
+  }
+
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .page-heading {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .page-heading-icon {
+    font-size: 22px;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ─── SUMMARY CARDS ─── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .sum-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+  }
+
+  .sum-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .sum-value { font-size: 28px; font-weight: 600; font-family: var(--mono); color: var(--text); }
+  .sum-sub { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+
+  /* ─── FILTERS / VIEW BAR ─── */
+  .view-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .filter-select {
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-md);
+    background: var(--surface);
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+
+  .filter-select:focus { border-color: var(--accent); }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius);
+    padding: 5px 10px;
+  }
+
+  .search-box input {
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text);
+    background: transparent;
+    width: 180px;
+  }
+
+  .search-box input::placeholder { color: var(--text-hint); }
+
+  .search-icon { color: var(--text-hint); font-size: 15px; }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead { background: var(--surface2); }
+
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  th.sortable { cursor: pointer; }
+  th.sortable:hover { color: var(--text); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.08s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--bg); }
+
+  td { padding: 11px 16px; vertical-align: middle; }
+
+  .case-id {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .drug-name { font-weight: 500; color: var(--text); }
+  .member-name { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+  .date-cell { font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+
+  /* ─── STATUS BADGES ─── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+  .badge-af { background: var(--amber-light); color: var(--amber-text); }
+  .badge-af .badge-dot { background: var(--amber); }
+
+  .badge-rr { background: var(--blue-light); color: var(--blue-text); }
+  .badge-rr .badge-dot { background: var(--blue); }
+
+  .badge-den { background: var(--red-light); color: var(--red-text); }
+  .badge-den .badge-dot { background: var(--red); }
+
+  .badge-sub { background: var(--accent-light); color: var(--accent-text); }
+  .badge-sub .badge-dot { background: var(--accent); }
+
+  .badge-pend { background: var(--purple-light); color: var(--purple-text); }
+  .badge-pend .badge-dot { background: var(--purple); }
+
+  .badge-inp { background: #f0f9e8; color: #3a6e0e; }
+  .badge-inp .badge-dot { background: #5aab1e; }
+
+  .badge-in { background: #f5eeff; color: #6930c3; }
+  .badge-in .badge-dot { background: #9b5de5; }
+
+  /* ─── DATE FILTER BAR ─── */
+  .date-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 12px;
+  }
+  .date-filter-label { font-size: 11px; font-weight: 600; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.04em; margin-right: 4px; }
+  .date-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border-md);
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+  .date-chip:hover { background: var(--accent-light); color: var(--accent-text); border-color: var(--accent); }
+  .date-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .date-range-inputs { display: flex; align-items: center; gap: 6px; margin-left: 4px; }
+  .date-range-inputs input {
+    padding: 4px 8px;
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    width: 128px;
+  }
+  .date-range-inputs input:focus { border-color: var(--accent); }
+  .date-range-sep { font-size: 11px; color: var(--text-hint); }
+
+  .action-text {
+    font-size: 12.5px;
+    color: var(--text);
+    max-width: 220px;
+    line-height: 1.4;
+  }
+
+  .row-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.1s; }
+  tbody tr:hover .row-actions { opacity: 1; }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.1s;
+  }
+
+  .icon-btn-edit { background: var(--blue-light); color: var(--blue-text); }
+  .icon-btn-edit:hover { background: #cfe0f5; }
+  .icon-btn-del { background: var(--red-light); color: var(--red-text); }
+  .icon-btn-del:hover { background: #f9c7c0; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 15px; font-weight: 500; margin-bottom: 4px; color: var(--text); }
+  .empty-sub { font-size: 13px; }
+
+  /* ─── MODAL ─── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+    backdrop-filter: blur(2px);
+  }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    animation: pop 0.15s ease;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.96); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .modal-close {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--surface2);
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+
+  .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+  .form-input, .form-select, .form-textarea {
+    padding: 8px 10px;
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 13.5px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(15,123,108,0.12);
+  }
+
+  .form-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+  .form-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+  }
+
+  .form-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-hint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #37352f;
+    color: white;
+    padding: 10px 18px;
+    border-radius: var(--radius-lg);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 200;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  .points-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  .pts-2 { background: #fff8e1; color: #b35c00; }
+  .pts-1 { background: var(--accent-light); color: var(--accent-text); }
+  .pts-0 { background: var(--gray-tag); color: var(--gray-tag-text); }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .content { padding: 20px; }
+    .topbar { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Leou Productivity Tracker</div>
+        <div class="logo-sub">PA Case Tracker</div>
+      </div>
+    </div>
+
+    <div class="sidebar-label">Views</div>
+    <div class="sidebar-section">
+      <button class="sidebar-item active" onclick="setView('all')">
+        <span style="font-size:15px">📋</span> All Cases
+      </button>
+      <button class="sidebar-item" onclick="setView('today')">
+        <span style="font-size:15px">🕐</span> Today's Cases
+      </button>
+    </div>
+
+    <div class="sidebar-label">Status · Initial</div>
+    <div class="sidebar-section">
+      <button class="sidebar-item" onclick="filterByInitial('PA Answering Failed')">
+        <span class="dot" style="background:var(--amber)"></span> Answering Failed
+      </button>
+      <button class="sidebar-item" onclick="filterByInitial('PA Ready to Review')">
+        <span class="dot" style="background:var(--blue)"></span> Ready to Review
+      </button>
+      <button class="sidebar-item" onclick="filterByInitial('Denied')">
+        <span class="dot" style="background:var(--red)"></span> Denied
+      </button>
+    </div>
+
+    <div class="sidebar-label">Status · After</div>
+    <div class="sidebar-section">
+      <button class="sidebar-item" onclick="filterByAfter('PA Submitted')">
+        <span class="dot" style="background:var(--accent)"></span> PA Submitted
+      </button>
+      <button class="sidebar-item" onclick="filterByAfter('PA Answering Failed')">
+        <span class="dot" style="background:var(--amber)"></span> Still AF
+      </button>
+      <button class="sidebar-item" onclick="filterByAfter('PA - Inprogress')">
+        <span class="dot" style="background:#5aab1e"></span> PA Inprogress
+      </button>
+      <button class="sidebar-item" onclick="filterByAfter('Input Needed')">
+        <span class="dot" style="background:#9b5de5"></span> Input Needed
+      </button>
+      <button class="sidebar-item" onclick="filterByAfter('Denied')">
+        <span class="dot" style="background:var(--red)"></span> Still Denied
+      </button>
+    </div>
+
+    <div class="stats-mini">
+      <div class="stats-mini-label">Quick Stats</div>
+      <div class="stats-row" id="sidebar-stats"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="breadcrumb"><span>Leou Productivity Tracker</span> / PA Cases</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-primary" onclick="openModal()">+ Log Case</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <div class="page-heading">
+          <span class="page-heading-icon">📁</span>
+          PA Case Tracker
+        </div>
+        <div class="page-sub" id="view-subtitle">All logged prior authorization cases</div>
+      </div>
+
+      <!-- SUMMARY CARDS -->
+      <div class="summary-grid" id="summary-grid"></div>
+
+      <!-- DATE FILTER BAR -->
+      <div class="date-filter-bar">
+        <span class="date-filter-label">📅 Date</span>
+        <button class="date-chip active" id="chip-all" onclick="setDateFilter('all',this)">All time</button>
+        <button class="date-chip" id="chip-today" onclick="setDateFilter('today',this)">Today</button>
+        <button class="date-chip" id="chip-week" onclick="setDateFilter('week',this)">This week</button>
+        <button class="date-chip" id="chip-month" onclick="setDateFilter('month',this)">This month</button>
+        <div class="date-range-inputs">
+          <input type="date" id="range-from" onchange="setDateFilter('range',null)" title="From date">
+          <span class="date-range-sep">→</span>
+          <input type="date" id="range-to" onchange="setDateFilter('range',null)" title="To date">
+        </div>
+      </div>
+
+      <!-- VIEW BAR -->
+      <div class="view-bar">
+        <div class="filter-group">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search case, CMM key, action…" oninput="renderTable()">
+          </div>
+          <select class="filter-select" id="filter-initial" onchange="renderTable()">
+            <option value="">All Initial Status</option>
+            <option>PA Answering Failed</option>
+            <option>PA Ready to Review</option>
+            <option>Denied</option>
+          </select>
+          <select class="filter-select" id="filter-after" onchange="renderTable()">
+            <option value="">All After Status</option>
+            <option>PA Submitted</option>
+            <option>PA Answering Failed</option>
+            <option>PA - Inprogress</option>
+            <option>Input Needed</option>
+            <option>Denied</option>
+          </select>
+        </div>
+        <div style="font-size:12px;color:var(--text-hint)" id="result-count"></div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Case ID</th>
+              <th>Date Logged</th>
+              <th>CMM Key</th>
+              <th>Initial Status</th>
+              <th>Action Taken</th>
+              <th>Status After</th>
+              <th>Pts</th>
+              <th>Notes</th>
+              <th style="width:72px"></th>
+            </tr>
+          </thead>
+          <tbody id="case-table-body"></tbody>
+        </table>
+        <div id="empty-state" style="display:none">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">No cases found</div>
+            <div class="empty-sub">Try adjusting your filters or log a new case</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-backdrop" id="modal" style="display:none" onclick="closeModalBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Log New PA Case</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">CMM Key</label>
+          <input class="form-input" id="f-cmm" placeholder="e.g. CMM-2025-XXXXXX" style="font-family:var(--mono);letter-spacing:0.03em;" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date Logged</label>
+          <input class="form-input" type="date" id="f-date" />
+        </div>
+      </div>
+
+      <hr class="form-divider">
+      <div class="form-section-label">Status Flow</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Initial Status (when logged)</label>
+          <select class="form-select" id="f-initial">
+            <option value="">Select…</option>
+            <option>PA Answering Failed</option>
+            <option>PA Ready to Review</option>
+            <option>Denied</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status After Action</label>
+          <select class="form-select" id="f-after">
+            <option value="">Select…</option>
+            <option>PA Submitted</option>
+            <option>PA Answering Failed</option>
+            <option>PA - Inprogress</option>
+            <option>Input Needed</option>
+            <option>Denied</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Action Taken</label>
+        <input class="form-input" id="f-action" placeholder="e.g. Called prescriber, resubmitted via CoverMyMeds, escalated to clinical…" />
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Notes / Additional Info</label>
+        <textarea class="form-textarea" id="f-notes" placeholder="Optional — clinical notes, callback details, follow-up needed, etc."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveCase()">Save Case</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-backdrop" id="confirm-modal" style="display:none" onclick="if(event.target.id==='confirm-modal')cancelDelete()">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header" style="padding:18px 20px 14px">
+      <div class="modal-title" style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">🗑</span> Delete Case?
+      </div>
+      <button class="modal-close" onclick="cancelDelete()">×</button>
+    </div>
+    <div class="modal-body" style="padding:16px 20px;gap:8px">
+      <p style="font-size:13.5px;color:var(--text)">You're about to permanently delete:</p>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin:4px 0">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)" id="confirm-case-id"></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px" id="confirm-cmm"></div>
+      </div>
+      <p style="font-size:12px;color:var(--red-text)">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer" style="padding:14px 20px">
+      <button class="btn btn-ghost" onclick="cancelDelete()">Cancel</button>
+      <button class="btn" onclick="confirmDelete()" style="background:var(--red);color:white;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'pa_cases_optumrx';
+  let cases = [];
+  let editId = null;
+  let activeFilter = { type: null, value: null };
+
+  function load() {
+    try { cases = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { cases = []; }
+  }
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
+  }
+
+  function genId() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `PA-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+  }
+
+  function today() {
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function fmtDate(s) {
+    if (!s) return '—';
+    const d = new Date(s + 'T00:00:00');
+    return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function statusBadge(status) {
+    const map = {
+      'PA Answering Failed': ['badge-af', 'Answering Failed'],
+      'PA Ready to Review': ['badge-rr', 'Ready to Review'],
+      'Denied': ['badge-den', 'Denied'],
+      'PA Submitted': ['badge-sub', 'PA Submitted'],
+      'PA - Inprogress': ['badge-inp', 'PA Inprogress'],
+      'Input Needed': ['badge-in', 'Input Needed'],
+    };
+    const [cls, label] = map[status] || ['badge-gray', status || '—'];
+    return `<span class="badge ${cls}"><span class="badge-dot"></span>${label}</span>`;
+  }
+
+  let dateFilter = 'all';
+
+  function setDateFilter(mode, chipEl) {
+    dateFilter = mode;
+    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+    if (chipEl) {
+      chipEl.classList.add('active');
+    } else {
+      document.getElementById('chip-all').classList.remove('active');
+    }
+    if (mode === 'range') {
+      document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+    }
+    renderTable();
+  }
+
+  function setView(v) {
+    activeFilter = { type: 'view', value: v };
+    document.getElementById('view-subtitle').textContent =
+      v === 'today' ? "Cases logged today" : "All logged prior authorization cases";
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    if (v === 'today') {
+      setDateFilter('today', document.getElementById('chip-today'));
+    } else {
+      setDateFilter('all', document.getElementById('chip-all'));
+    }
+  }
+
+  function filterByInitial(v) {
+    document.getElementById('filter-initial').value = v;
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    renderTable();
+  }
+
+  function filterByAfter(v) {
+    document.getElementById('filter-after').value = v;
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    renderTable();
+  }
+
+  function getWeekRange() {
+    const d = new Date();
+    const day = d.getDay();
+    const mon = new Date(d); mon.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    return [mon.toISOString().slice(0,10), sun.toISOString().slice(0,10)];
+  }
+
+  function getMonthRange() {
+    const d = new Date();
+    const first = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10);
+    const last = new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().slice(0,10);
+    return [first, last];
+  }
+
+  function getFiltered() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const initF = document.getElementById('filter-initial').value;
+    const afterF = document.getElementById('filter-after').value;
+    const t = today();
+    const rangeFrom = document.getElementById('range-from').value;
+    const rangeTo = document.getElementById('range-to').value;
+
+    let dateFrom = null, dateTo = null;
+    if (dateFilter === 'today') { dateFrom = dateTo = t; }
+    else if (dateFilter === 'week') { [dateFrom, dateTo] = getWeekRange(); }
+    else if (dateFilter === 'month') { [dateFrom, dateTo] = getMonthRange(); }
+    else if (dateFilter === 'range') {
+      dateFrom = rangeFrom || null;
+      dateTo = rangeTo || null;
+    }
+
+    return cases.filter(c => {
+      if (dateFrom && c.date < dateFrom) return false;
+      if (dateTo && c.date > dateTo) return false;
+      if (initF && c.initialStatus !== initF) return false;
+      if (afterF && c.afterStatus !== afterF) return false;
+      if (search) {
+        const hay = [c.id, c.cmmKey, c.action, c.notes].join(' ').toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+  }
+
+  function calcPoints(c) {
+    if (c.afterStatus === 'PA Submitted') {
+      if (c.initialStatus === 'PA Answering Failed') return 2;
+      if (c.initialStatus === 'PA Ready to Review') return 1;
+    }
+    return 0;
+  }
+
+  function pointsBadge(c) {
+    const pts = calcPoints(c);
+    if (pts === 2) return `<span class="points-badge pts-2">⭐ 2 pts</span>`;
+    if (pts === 1) return `<span class="points-badge pts-1">✦ 1 pt</span>`;
+    return `<span class="points-badge pts-0">— 0</span>`;
+  }
+
+  function renderTable() {
+    const filtered = getFiltered();
+    const tbody = document.getElementById('case-table-body');
+    const empty = document.getElementById('empty-state');
+    document.getElementById('result-count').textContent = `${filtered.length} case${filtered.length !== 1 ? 's' : ''}`;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      tbody.innerHTML = filtered.slice().reverse().map(c => `
+        <tr ondblclick="openEdit('${c.id}')" style="cursor:pointer" title="Double-click to edit">
+          <td><div class="case-id">${c.id}</div></td>
+          <td><div class="date-cell">${fmtDate(c.date)}</div></td>
+          <td><div class="drug-name" style="font-family:var(--mono);font-size:12px">${c.cmmKey || '—'}</div></td>
+          <td>${statusBadge(c.initialStatus)}</td>
+          <td><div class="action-text">${c.action || '—'}</div></td>
+          <td>${statusBadge(c.afterStatus)}</td>
+          <td>${pointsBadge(c)}</td>
+          <td><div style="font-size:12px;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.notes || ''}">${c.notes || '—'}</div></td>
+          <td>
+            <div class="row-actions">
+              <button class="icon-btn icon-btn-edit" onclick="event.stopPropagation();openEdit('${c.id}')" title="Edit">✏️</button>
+              <button class="icon-btn icon-btn-del" onclick="event.stopPropagation();deleteCase('${c.id}')" title="Delete">🗑</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    renderSummary();
+    renderSidebarStats();
+  }
+
+  function renderSummary() {
+    const all = cases;
+    const t = today();
+    const todayCount = all.filter(c => c.date === t).length;
+    const submitted = all.filter(c => c.afterStatus === 'PA Submitted').length;
+    const af = all.filter(c => c.initialStatus === 'PA Answering Failed').length;
+    const totalPoints = all.reduce((sum, c) => sum + calcPoints(c), 0);
+    const todayPoints = all.filter(c => c.date === t).reduce((sum, c) => sum + calcPoints(c), 0);
+
+    const rate = all.length ? Math.round((submitted / all.length) * 100) : 0;
+
+    document.getElementById('summary-grid').innerHTML = `
+      <div class="sum-card">
+        <div class="sum-label">Total Cases</div>
+        <div class="sum-value">${all.length}</div>
+        <div class="sum-sub">All time</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Today</div>
+        <div class="sum-value">${todayCount}</div>
+        <div class="sum-sub">${new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'})}</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">PA Submitted</div>
+        <div class="sum-value" style="color:var(--accent)">${submitted}</div>
+        <div class="sum-sub">${rate}% resolution rate</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Total Points</div>
+        <div class="sum-value" style="color:var(--amber)">${totalPoints}</div>
+        <div class="sum-sub">+${todayPoints} pts today</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Answering Failed</div>
+        <div class="sum-value" style="color:var(--red)">${af}</div>
+        <div class="sum-sub">Initial status</div>
+      </div>
+    `;
+  }
+
+  function renderSidebarStats() {
+    const all = cases;
+    const sub = all.filter(c => c.afterStatus === 'PA Submitted').length;
+    const af = all.filter(c => c.afterStatus === 'PA Answering Failed').length;
+    const den = all.filter(c => c.afterStatus === 'Denied').length;
+    const pts = all.reduce((sum, c) => sum + calcPoints(c), 0);
+
+    document.getElementById('sidebar-stats').innerHTML = `
+      <div class="stat-mini-item">
+        <span>PA Submitted</span>
+        <span class="stat-mini-num" style="color:var(--accent)">${sub}</span>
+      </div>
+      <div class="stat-mini-item">
+        <span>Still AF</span>
+        <span class="stat-mini-num" style="color:var(--amber)">${af}</span>
+      </div>
+      <div class="stat-mini-item">
+        <span>Denied</span>
+        <span class="stat-mini-num" style="color:var(--red)">${den}</span>
+      </div>
+      <div class="stat-mini-item" style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px">
+        <span style="font-weight:600;color:var(--text-muted)">Total Pts</span>
+        <span class="stat-mini-num" style="color:var(--amber);font-size:13px">${pts}</span>
+      </div>
+    `;
+  }
+
+  function openModal(prefill) {
+    editId = null;
+    document.getElementById('modal-title').textContent = 'Log New PA Case';
+    document.getElementById('modal-save-btn').textContent = 'Save Case';
+    clearForm();
+    document.getElementById('f-date').value = today();
+    if (prefill) {
+      document.getElementById('f-initial').value = prefill;
+    }
+    document.getElementById('modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('f-cmm').focus(), 100);
+  }
+
+  function openEdit(id) {
+    const c = cases.find(x => x.id === id);
+    if (!c) return;
+    editId = id;
+    document.getElementById('modal-title').textContent = 'Edit Case · ' + id;
+    document.getElementById('modal-save-btn').textContent = 'Update Case';
+    document.getElementById('f-cmm').value = c.cmmKey || '';
+    document.getElementById('f-date').value = c.date || '';
+    document.getElementById('f-initial').value = c.initialStatus || '';
+    document.getElementById('f-action').value = c.action || '';
+    document.getElementById('f-after').value = c.afterStatus || '';
+    document.getElementById('f-notes').value = c.notes || '';
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  function clearForm() {
+    ['f-cmm','f-date','f-action','f-notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-initial').value = '';
+    document.getElementById('f-after').value = '';
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function closeModalBackdrop(e) {
+    if (e.target.id === 'modal') closeModal();
+  }
+
+  function saveCase() {
+    const cmmKey = document.getElementById('f-cmm').value.trim();
+    const initialStatus = document.getElementById('f-initial').value;
+    const afterStatus = document.getElementById('f-after').value;
+
+    if (!initialStatus) { showToast('⚠️ Please select an initial status'); return; }
+
+    const entry = {
+      id: editId || genId(),
+      cmmKey,
+      date: document.getElementById('f-date').value || today(),
+      initialStatus,
+      action: document.getElementById('f-action').value.trim(),
+      afterStatus,
+      notes: document.getElementById('f-notes').value.trim(),
+      createdAt: editId ? (cases.find(c => c.id === editId)?.createdAt || Date.now()) : Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    if (editId) {
+      const idx = cases.findIndex(c => c.id === editId);
+      if (idx > -1) cases[idx] = entry;
+      showToast('✅ Case updated');
+    } else {
+      cases.push(entry);
+      showToast('✅ Case logged — ' + entry.id);
+    }
+
+    save();
+    closeModal();
+    renderTable();
+  }
+
+  let pendingDeleteId = null;
+
+  function deleteCase(id) {
+    pendingDeleteId = id;
+    const c = cases.find(x => x.id === id);
+    document.getElementById('confirm-case-id').textContent = id;
+    document.getElementById('confirm-cmm').textContent = c?.cmmKey ? `CMM Key: ${c.cmmKey}` : '';
+    document.getElementById('confirm-modal').style.display = 'flex';
+  }
+
+  function confirmDelete() {
+    if (!pendingDeleteId) return;
+    cases = cases.filter(c => c.id !== pendingDeleteId);
+    pendingDeleteId = null;
+    save();
+    renderTable();
+    document.getElementById('confirm-modal').style.display = 'none';
+    showToast('🗑 Case deleted');
+  }
+
+  function cancelDelete() {
+    pendingDeleteId = null;
+    document.getElementById('confirm-modal').style.display = 'none';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function exportCSV() {
+    if (!cases.length) { showToast('No cases to export'); return; }
+    const headers = ['Case ID','Date','CMM Key','Initial Status','Action Taken','Status After','Points','Notes'];
+    const rows = cases.map(c => [
+      c.id, c.date, c.cmmKey,
+      c.initialStatus, c.action, c.afterStatus, calcPoints(c), c.notes
+    ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`));
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `PA_Cases_${today()}.csv`;
+    a.click();
+    showToast('⬇ CSV exported');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  load();
+  renderTable();
+</script>
+</body>
+</html>
