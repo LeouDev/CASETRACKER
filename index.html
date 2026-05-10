@@ -871,7 +871,7 @@
   // ─── SUPABASE CONFIG ───
   const SUPABASE_URL = 'https://ntssimpaqyhtgvuyodyv.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50c3NpbXBhcXlodGd2dXlvZHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODA1NTksImV4cCI6MjA5Mzk1NjU1OX0.v1g4WONAfsO_paJXZ1TH-fqtwH2J6NZdfMyYZ_hpvOE';
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const TABLE = 'pa_cases';
 
   let cases = [];
@@ -880,7 +880,7 @@
 
   async function load() {
     showToast('⏳ Loading cases…');
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from(TABLE)
       .select('*')
       .order('created_at', { ascending: true });
@@ -897,17 +897,17 @@
   async function save(entry) {
     const row = appToDb(entry);
     if (editId) {
-      const { error } = await supabase.from(TABLE).update(row).eq('id', entry.id);
+      const { error } = await db.from(TABLE).update(row).eq('id', entry.id);
       if (error) { showToast('❌ Update failed: ' + error.message); return false; }
     } else {
-      const { error } = await supabase.from(TABLE).insert(row);
+      const { error } = await db.from(TABLE).insert(row);
       if (error) { showToast('❌ Save failed: ' + error.message); return false; }
     }
     return true;
   }
 
   async function removeCase(id) {
-    const { error } = await supabase.from(TABLE).delete().eq('id', id);
+    const { error } = await db.from(TABLE).delete().eq('id', id);
     if (error) { showToast('❌ Delete failed: ' + error.message); return false; }
     return true;
   }
