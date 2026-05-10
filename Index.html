@@ -866,18 +866,78 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const STORAGE_KEY = 'pa_cases_optumrx';
+  // ─── SUPABASE CONFIG ───
+  const SUPABASE_URL = 'https://ntssimpaqyhtgvuyodyv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50c3NpbXBhcXlodGd2dXlvZHl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODA1NTksImV4cCI6MjA5Mzk1NjU1OX0.v1g4WONAfsO_paJXZ1TH-fqtwH2J6NZdfMyYZ_hpvOE';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const TABLE = 'pa_cases';
+
   let cases = [];
   let editId = null;
   let activeFilter = { type: null, value: null };
 
-  function load() {
-    try { cases = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { cases = []; }
+  async function load() {
+    showToast('⏳ Loading cases…');
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('Supabase load error:', error);
+      showToast('❌ Failed to load cases from Supabase');
+      return;
+    }
+    // Map snake_case DB columns → camelCase app fields
+    cases = (data || []).map(dbToApp);
+    renderTable();
   }
 
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
+  async function save(entry) {
+    const row = appToDb(entry);
+    if (editId) {
+      const { error } = await supabase.from(TABLE).update(row).eq('id', entry.id);
+      if (error) { showToast('❌ Update failed: ' + error.message); return false; }
+    } else {
+      const { error } = await supabase.from(TABLE).insert(row);
+      if (error) { showToast('❌ Save failed: ' + error.message); return false; }
+    }
+    return true;
+  }
+
+  async function removeCase(id) {
+    const { error } = await supabase.from(TABLE).delete().eq('id', id);
+    if (error) { showToast('❌ Delete failed: ' + error.message); return false; }
+    return true;
+  }
+
+  // DB row (snake_case) → app object (camelCase)
+  function dbToApp(row) {
+    return {
+      id: row.id,
+      cmmKey: row.cmm_key || '',
+      date: row.date || '',
+      initialStatus: row.initial_status || '',
+      action: row.action || '',
+      afterStatus: row.after_status || '',
+      notes: row.notes || '',
+      createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
+      updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : Date.now(),
+    };
+  }
+
+  // App object → DB row for insert/update
+  function appToDb(c) {
+    return {
+      id: c.id,
+      cmm_key: c.cmmKey || null,
+      date: c.date || null,
+      initial_status: c.initialStatus || null,
+      action: c.action || null,
+      after_status: c.afterStatus || null,
+      notes: c.notes || null,
+    };
   }
 
   function genId() {
@@ -1158,39 +1218,37 @@
     if (e.target.id === 'modal') closeModal();
   }
 
-  function saveCase() {
-    const cmmKey = document.getElementById('f-cmm').value.trim();
-    const initialStatus = document.getElementById('f-initial').value;
-    const afterStatus = document.getElementById('f-after').value;
 
-    if (!initialStatus) { showToast('⚠️ Please select an initial status'); return; }
-
+  async function saveCase() {
+    const cmmKey = document.getElementById("f-cmm").value.trim();
+    const initialStatus = document.getElementById("f-initial").value;
+    const afterStatus = document.getElementById("f-after").value;
+    if (!initialStatus) { showToast("⚠️ Please select an initial status"); return; }
+    const isEdit = !!editId;
     const entry = {
       id: editId || genId(),
       cmmKey,
-      date: document.getElementById('f-date').value || today(),
+      date: document.getElementById("f-date").value || today(),
       initialStatus,
-      action: document.getElementById('f-action').value.trim(),
+      action: document.getElementById("f-action").value.trim(),
       afterStatus,
-      notes: document.getElementById('f-notes').value.trim(),
+      notes: document.getElementById("f-notes").value.trim(),
       createdAt: editId ? (cases.find(c => c.id === editId)?.createdAt || Date.now()) : Date.now(),
       updatedAt: Date.now(),
     };
-
-    if (editId) {
-      const idx = cases.findIndex(c => c.id === editId);
+    const ok = await save(entry);
+    if (!ok) return;
+    if (isEdit) {
+      const idx = cases.findIndex(c => c.id === entry.id);
       if (idx > -1) cases[idx] = entry;
-      showToast('✅ Case updated');
+      showToast("✅ Case updated");
     } else {
       cases.push(entry);
-      showToast('✅ Case logged — ' + entry.id);
+      showToast("✅ Case logged — " + entry.id);
     }
-
-    save();
     closeModal();
     renderTable();
   }
-
   let pendingDeleteId = null;
 
   function deleteCase(id) {
@@ -1201,11 +1259,13 @@
     document.getElementById('confirm-modal').style.display = 'flex';
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDeleteId) return;
-    cases = cases.filter(c => c.id !== pendingDeleteId);
+    const idToDelete = pendingDeleteId;
     pendingDeleteId = null;
-    save();
+    const ok = await removeCase(idToDelete);
+    if (!ok) return;
+    cases = cases.filter(c => c.id !== idToDelete);
     renderTable();
     document.getElementById('confirm-modal').style.display = 'none';
     showToast('🗑 Case deleted');
@@ -1243,8 +1303,7 @@
     if (e.key === 'Escape') closeModal();
   });
 
-  load();
-  renderTable();
+  load(); // async — renderTable is called inside after data loads
 </script>
 </body>
 </html>
