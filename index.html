@@ -919,7 +919,7 @@
       cmmKey: row.cmm_key || '',
       date: row.date || '',
       initialStatus: row.initial_status || '',
-      action: row.action || '',
+      action: row.action_taken || '',
       afterStatus: row.after_status || '',
       notes: row.notes || '',
       createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now(),
@@ -934,7 +934,7 @@
       cmm_key: c.cmmKey || null,
       date: c.date || null,
       initial_status: c.initialStatus || null,
-      action: c.action || null,
+      action_taken: c.action || null,
       after_status: c.afterStatus || null,
       notes: c.notes || null,
     };
