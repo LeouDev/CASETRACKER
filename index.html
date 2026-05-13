@@ -306,14 +306,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    overflow-x: auto;
-    overflow-y: visible;
+    overflow: hidden;
     box-shadow: var(--shadow);
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .table-wrap table {
-    min-width: 900px;
   }
 
   table {
@@ -1225,11 +1219,26 @@
   }
 
 
+  let isSaving = false;
+
   async function saveCase() {
+    if (isSaving) return;
+    isSaving = true;
+    const btn = document.getElementById('modal-save-btn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
     const cmmKey = document.getElementById("f-cmm").value.trim();
     const initialStatus = document.getElementById("f-initial").value;
     const afterStatus = document.getElementById("f-after").value;
-    if (!initialStatus) { showToast("⚠️ Please select an initial status"); return; }
+    if (!initialStatus) {
+      showToast("⚠️ Please select an initial status");
+      btn.disabled = false;
+      btn.textContent = originalText;
+      isSaving = false;
+      return;
+    }
     const isEdit = !!editId;
     const entry = {
       id: editId || genId(),
@@ -1243,6 +1252,9 @@
       updatedAt: Date.now(),
     };
     const ok = await save(entry);
+    btn.disabled = false;
+    btn.textContent = originalText;
+    isSaving = false;
     if (!ok) return;
     if (isEdit) {
       const idx = cases.findIndex(c => c.id === entry.id);
