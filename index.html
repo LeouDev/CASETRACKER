@@ -137,6 +137,57 @@
   .stat-mini-item span:first-child { color: var(--text-muted); }
   .stat-mini-num { font-weight: 600; font-family: var(--mono); font-size: 11px; }
 
+  /* ─── SIDEBAR COLLAPSE ─── */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    border-right: none !important;
+    padding: 0 !important;
+  }
+
+  .sidebar-inner {
+    width: 240px;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* ─── TOGGLE BUTTON ─── */
+  .sidebar-toggle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-md);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+
+  .sidebar-toggle-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(15,123,108,0.25);
+  }
+
   /* ─── MAIN ─── */
   .main {
     flex: 1;
@@ -306,14 +357,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    overflow-x: auto;
-    overflow-y: visible;
+    overflow: hidden;
     box-shadow: var(--shadow);
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .table-wrap table {
-    min-width: 900px;
   }
 
   table {
@@ -627,7 +672,8 @@
 <div class="layout">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
     <div class="sidebar-logo">
       <div class="logo-icon">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -686,12 +732,14 @@
       <div class="stats-mini-label">Quick Stats</div>
       <div class="stats-row" id="sidebar-stats"></div>
     </div>
+    </div><!-- end sidebar-inner -->
   </aside>
 
   <!-- MAIN -->
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
         <span class="breadcrumb"><span>Leou Productivity Tracker</span> / PA Cases</span>
       </div>
       <div class="topbar-right">
@@ -1225,11 +1273,26 @@
   }
 
 
+  let isSaving = false;
+
   async function saveCase() {
+    if (isSaving) return;
+    isSaving = true;
+    const btn = document.getElementById('modal-save-btn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
     const cmmKey = document.getElementById("f-cmm").value.trim();
     const initialStatus = document.getElementById("f-initial").value;
     const afterStatus = document.getElementById("f-after").value;
-    if (!initialStatus) { showToast("⚠️ Please select an initial status"); return; }
+    if (!initialStatus) {
+      showToast("⚠️ Please select an initial status");
+      btn.disabled = false;
+      btn.textContent = originalText;
+      isSaving = false;
+      return;
+    }
     const isEdit = !!editId;
     const entry = {
       id: editId || genId(),
@@ -1243,6 +1306,9 @@
       updatedAt: Date.now(),
     };
     const ok = await save(entry);
+    btn.disabled = false;
+    btn.textContent = originalText;
+    isSaving = false;
     if (!ok) return;
     if (isEdit) {
       const idx = cases.findIndex(c => c.id === entry.id);
@@ -1308,6 +1374,14 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
   });
+
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.getElementById('sidebar-toggle-btn');
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    btn.textContent = isCollapsed ? '☰' : '✕';
+    btn.title = isCollapsed ? 'Open sidebar' : 'Close sidebar';
+  }
 
   load(); // async — renderTable is called inside after data loads
 </script>
