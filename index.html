@@ -1111,43 +1111,51 @@
     const all = cases;
     const filtered = getFiltered();
     const t = today();
-    const todayCount = all.filter(c => c.date === t).length;
-    const submitted = all.filter(c => c.afterStatus === 'PA Submitted').length;
-    const af = all.filter(c => c.initialStatus === 'PA Answering Failed').length;
-    const totalPoints = all.reduce((sum, c) => sum + calcPoints(c), 0);
-    const todayPoints = all.filter(c => c.date === t).reduce((sum, c) => sum + calcPoints(c), 0);
 
-    const filteredPoints = filtered.reduce((sum, c) => sum + calcPoints(c), 0);
+    // All-time baselines (always shown as subtext)
+    const allPoints   = all.reduce((sum, c) => sum + calcPoints(c), 0);
+    const allCases    = all.length;
+    const allToday    = all.filter(c => c.date === t).length;
+    const allSubmit   = all.filter(c => c.afterStatus === 'PA Submitted').length;
+    const allAF       = all.filter(c => c.initialStatus === 'PA Answering Failed').length;
+
+    // Filtered values
+    const fPoints  = filtered.reduce((sum, c) => sum + calcPoints(c), 0);
+    const fCases   = filtered.length;
+    const fToday   = filtered.filter(c => c.date === t).length;
+    const fSubmit  = filtered.filter(c => c.afterStatus === 'PA Submitted').length;
+    const fAF      = filtered.filter(c => c.initialStatus === 'PA Answering Failed').length;
+
     const ptLabels = { all: 'All time', today: 'Today', week: 'This week', month: 'This month', range: 'Custom range' };
-    const ptLabel = ptLabels[dateFilter] || 'All time';
-    const showFiltered = dateFilter !== 'all';
+    const lbl = ptLabels[dateFilter] || 'All time';
+    const isFiltered = dateFilter !== 'all';
 
-    const rate = all.length ? Math.round((submitted / all.length) * 100) : 0;
+    const fRate = fCases ? Math.round((fSubmit / fCases) * 100) : 0;
 
     document.getElementById('summary-grid').innerHTML = `
       <div class="sum-card">
-        <div class="sum-label">Total Cases</div>
-        <div class="sum-value">${all.length}</div>
-        <div class="sum-sub">All time</div>
+        <div class="sum-label">Total Cases${isFiltered ? ` · ${lbl}` : ''}</div>
+        <div class="sum-value">${isFiltered ? fCases : allCases}</div>
+        <div class="sum-sub">${isFiltered ? `${allCases} all time` : 'All time'}</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Today</div>
-        <div class="sum-value">${todayCount}</div>
+        <div class="sum-label">Today${isFiltered ? ` · ${lbl}` : ''}</div>
+        <div class="sum-value">${isFiltered ? fToday : allToday}</div>
         <div class="sum-sub">${new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'})}</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">PA Submitted</div>
-        <div class="sum-value" style="color:var(--accent)">${submitted}</div>
-        <div class="sum-sub">${rate}% resolution rate</div>
+        <div class="sum-label">PA Submitted${isFiltered ? ` · ${lbl}` : ''}</div>
+        <div class="sum-value" style="color:var(--accent)">${isFiltered ? fSubmit : allSubmit}</div>
+        <div class="sum-sub">${fRate}% resolution rate</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Total Points${showFiltered ? ` · ${ptLabel}` : ''}</div>
-        <div class="sum-value" style="color:var(--amber)">${showFiltered ? filteredPoints : totalPoints}</div>
-        <div class="sum-sub">${showFiltered ? `${totalPoints} pts all time` : `+${todayPoints} pts today`}</div>
+        <div class="sum-label">Total Points${isFiltered ? ` · ${lbl}` : ''}</div>
+        <div class="sum-value" style="color:var(--amber)">${isFiltered ? fPoints : allPoints}</div>
+        <div class="sum-sub">${isFiltered ? `${allPoints} pts all time` : `+${filtered.filter(c=>c.date===t).reduce((s,c)=>s+calcPoints(c),0)} pts today`}</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Answering Failed</div>
-        <div class="sum-value" style="color:var(--red)">${af}</div>
+        <div class="sum-label">Answering Failed${isFiltered ? ` · ${lbl}` : ''}</div>
+        <div class="sum-value" style="color:var(--red)">${isFiltered ? fAF : allAF}</div>
         <div class="sum-sub">Initial status</div>
       </div>
     `;
