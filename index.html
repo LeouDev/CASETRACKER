@@ -1347,9 +1347,10 @@
   }
 
   function exportCSV() {
-    if (!cases.length) { showToast('No cases to export'); return; }
+    const filtered = getFiltered();
+    if (!filtered.length) { showToast('No cases to export'); return; }
     const headers = ['Case ID','Date','CMM Key','Initial Status','Action Taken','Status After','Points','Notes'];
-    const rows = cases.map(c => [
+    const rows = filtered.map(c => [
       c.id, c.date, c.cmmKey,
       c.initialStatus, c.action, c.afterStatus, calcPoints(c), c.notes
     ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`));
