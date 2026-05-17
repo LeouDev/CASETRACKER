@@ -608,6 +608,29 @@
   .pts-2 { background: #fff8e1; color: #b35c00; }
   .pts-1 { background: var(--accent-light); color: var(--accent-text); }
   .pts-0 { background: var(--gray-tag); color: var(--gray-tag-text); }
+  /* ─── HAMBURGER BUTTON ─── */
+  .hamburger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-md);
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s;
+    margin-right: 4px;
+  }
+  .hamburger-btn:hover { background: var(--surface2); color: var(--text); }
+
+  /* ─── SIDEBAR COLLAPSED STATE ─── */
+  .sidebar-collapsed .sidebar {
+    display: none;
+  }
+
   @media (max-width: 900px) {
     .sidebar { display: none; }
     .summary-grid { grid-template-columns: repeat(2, 1fr); }
@@ -686,6 +709,13 @@
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
+        <button class="hamburger-btn" onclick="toggleSidebar()" id="hamburger-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3.5" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+            <rect x="2" y="7.25" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+            <rect x="2" y="11" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+          </svg>
+        </button>
         <span class="breadcrumb"><span>Leou Productivity Tracker</span> / PA Cases</span>
       </div>
       <div class="topbar-right">
@@ -1311,6 +1341,11 @@
     a.download = `PA_Cases_${today()}.csv`;
     a.click();
     showToast('⬇ CSV exported');
+  }
+
+  function toggleSidebar() {
+    const layout = document.querySelector('.layout');
+    layout.classList.toggle('sidebar-collapsed');
   }
 
   document.addEventListener('keydown', e => {
