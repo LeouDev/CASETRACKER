@@ -306,7 +306,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     box-shadow: var(--shadow);
   }
 
@@ -1263,11 +1264,23 @@
   }
 
 
+  let isSaving = false;
+
   async function saveCase() {
+    if (isSaving) return;
+    isSaving = true;
+    const saveBtn = document.getElementById('modal-save-btn');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.6'; }
+
     const cmmKey = document.getElementById("f-cmm").value.trim();
     const initialStatus = document.getElementById("f-initial").value;
     const afterStatus = document.getElementById("f-after").value;
-    if (!initialStatus) { showToast("⚠️ Please select an initial status"); return; }
+    if (!initialStatus) {
+      showToast("⚠️ Please select an initial status");
+      isSaving = false;
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; }
+      return;
+    }
     const isEdit = !!editId;
     const entry = {
       id: editId || genId(),
@@ -1281,7 +1294,11 @@
       updatedAt: Date.now(),
     };
     const ok = await save(entry);
-    if (!ok) return;
+    if (!ok) {
+      isSaving = false;
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; }
+      return;
+    }
     if (isEdit) {
       const idx = cases.findIndex(c => c.id === entry.id);
       if (idx > -1) cases[idx] = entry;
@@ -1292,6 +1309,8 @@
     }
     closeModal();
     renderTable();
+    isSaving = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = ''; }
   }
   let pendingDeleteId = null;
 
