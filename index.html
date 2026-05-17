@@ -235,7 +235,7 @@
   /* ─── SUMMARY CARDS ─── */
   .summary-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     margin-bottom: 28px;
   }
@@ -1107,41 +1107,54 @@
     renderSidebarStats();
   }
 
+  function getDateFilterLabel() {
+    if (dateFilter === 'today') return 'Today';
+    if (dateFilter === 'week') return 'This Week';
+    if (dateFilter === 'month') return 'This Month';
+    if (dateFilter === 'range') {
+      const from = document.getElementById('range-from').value;
+      const to = document.getElementById('range-to').value;
+      if (from && to) return `${from} → ${to}`;
+      if (from) return `From ${from}`;
+      if (to) return `Until ${to}`;
+      return 'Custom Range';
+    }
+    return 'All Time';
+  }
+
   function renderSummary() {
+    const filtered = getFiltered();
     const all = cases;
     const t = today();
-    const todayCount = all.filter(c => c.date === t).length;
-    const submitted = all.filter(c => c.afterStatus === 'PA Submitted').length;
-    const af = all.filter(c => c.initialStatus === 'PA Answering Failed').length;
-    const totalPoints = all.reduce((sum, c) => sum + calcPoints(c), 0);
-    const todayPoints = all.filter(c => c.date === t).reduce((sum, c) => sum + calcPoints(c), 0);
+    const label = getDateFilterLabel();
 
-    const rate = all.length ? Math.round((submitted / all.length) * 100) : 0;
+    const filteredCount = filtered.length;
+    const filteredSubmitted = filtered.filter(c => c.afterStatus === 'PA Submitted').length;
+    const filteredAF = filtered.filter(c => c.initialStatus === 'PA Answering Failed').length;
+    const filteredPoints = filtered.reduce((sum, c) => sum + calcPoints(c), 0);
+
+    const totalAll = all.length;
+    const rate = filteredCount ? Math.round((filteredSubmitted / filteredCount) * 100) : 0;
 
     document.getElementById('summary-grid').innerHTML = `
       <div class="sum-card">
-        <div class="sum-label">Total Cases</div>
-        <div class="sum-value">${all.length}</div>
-        <div class="sum-sub">All time</div>
+        <div class="sum-label">Cases · ${label}</div>
+        <div class="sum-value">${filteredCount}</div>
+        <div class="sum-sub">of ${totalAll} total</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Today</div>
-        <div class="sum-value">${todayCount}</div>
-        <div class="sum-sub">${new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'})}</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-label">PA Submitted</div>
-        <div class="sum-value" style="color:var(--accent)">${submitted}</div>
+        <div class="sum-label">PA Submitted · ${label}</div>
+        <div class="sum-value" style="color:var(--accent)">${filteredSubmitted}</div>
         <div class="sum-sub">${rate}% resolution rate</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Total Points</div>
-        <div class="sum-value" style="color:var(--amber)">${totalPoints}</div>
-        <div class="sum-sub">+${todayPoints} pts today</div>
+        <div class="sum-label">Total Points · ${label}</div>
+        <div class="sum-value" style="color:var(--amber)">${filteredPoints}</div>
+        <div class="sum-sub">${dateFilter === 'all' ? 'All logged cases' : label}</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Answering Failed</div>
-        <div class="sum-value" style="color:var(--red)">${af}</div>
+        <div class="sum-label">Answering Failed · ${label}</div>
+        <div class="sum-value" style="color:var(--red)">${filteredAF}</div>
         <div class="sum-sub">Initial status</div>
       </div>
     `;
@@ -1219,26 +1232,11 @@
   }
 
 
-  let isSaving = false;
-
   async function saveCase() {
-    if (isSaving) return;
-    isSaving = true;
-    const btn = document.getElementById('modal-save-btn');
-    const originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
-
     const cmmKey = document.getElementById("f-cmm").value.trim();
     const initialStatus = document.getElementById("f-initial").value;
     const afterStatus = document.getElementById("f-after").value;
-    if (!initialStatus) {
-      showToast("⚠️ Please select an initial status");
-      btn.disabled = false;
-      btn.textContent = originalText;
-      isSaving = false;
-      return;
-    }
+    if (!initialStatus) { showToast("⚠️ Please select an initial status"); return; }
     const isEdit = !!editId;
     const entry = {
       id: editId || genId(),
@@ -1252,9 +1250,6 @@
       updatedAt: Date.now(),
     };
     const ok = await save(entry);
-    btn.disabled = false;
-    btn.textContent = originalText;
-    isSaving = false;
     if (!ok) return;
     if (isEdit) {
       const idx = cases.findIndex(c => c.id === entry.id);
