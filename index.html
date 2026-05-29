@@ -348,6 +348,62 @@
 
   .topbar-right { display: flex; align-items: center; gap: 8px; }
 
+  /* ── Accounts note strip ── */
+  .accounts-strip {
+    background: #f0f4ff;
+    border: 1px solid #d0daff;
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .accounts-strip-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #3b4a80;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+
+  .accounts-strip-divider {
+    width: 1px;
+    height: 14px;
+    background: #c0ccee;
+    margin: 0 6px;
+    flex-shrink: 0;
+  }
+
+  .account-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: #2d3a6b;
+    white-space: nowrap;
+  }
+
+  .account-tag strong {
+    font-weight: 600;
+    color: #1a2550;
+  }
+
+  .account-username {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    background: #dce4ff;
+    color: #2a3a8a;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
   .btn {
     display: inline-flex;
     align-items: center;
@@ -939,6 +995,26 @@
           PA Case Tracker
         </div>
         <div class="page-sub" id="view-subtitle">All logged prior authorization cases</div>
+      </div>
+
+      <!-- Accounts note strip -->
+      <div class="accounts-strip">
+        <span class="accounts-strip-label">📋 Accounts</span>
+        <div class="accounts-strip-divider"></div>
+        <span class="account-tag">
+          <strong>Central Texas Neurology Consultants</strong>
+          <span class="account-username">shealthctnc</span>
+        </span>
+        <div class="accounts-strip-divider"></div>
+        <span class="account-tag">
+          <strong>MS &amp; Neuromuscular Center of Excellence</strong>
+          <span class="account-username">shealth47</span>
+        </span>
+        <div class="accounts-strip-divider"></div>
+        <span class="account-tag">
+          <strong>Rocky Mountain MS Clinic</strong>
+          <span class="account-username">shealthrmmsc</span>
+        </span>
       </div>
 
       <!-- SUMMARY CARDS -->
