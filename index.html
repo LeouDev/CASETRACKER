@@ -631,6 +631,9 @@
   .badge-in { background: #f5eeff; color: #6930c3; }
   .badge-in .badge-dot { background: #9b5de5; }
 
+  .badge-none { background: #f0f0f0; color: #888; }
+  .badge-none .badge-dot { background: #bbb; }
+
   /* ─── DATE FILTER BAR ─── */
   .date-filter-bar {
     display: flex;
@@ -1049,6 +1052,7 @@
           </select>
           <select class="filter-select" id="filter-after" onchange="renderTable()">
             <option value="">All After Status</option>
+            <option>-</option>
             <option>PA Submitted</option>
             <option>PA Answering Failed</option>
             <option>PA - Inprogress</option>
@@ -1128,6 +1132,7 @@
           <label class="form-label">Status After Action</label>
           <select class="form-select" id="f-after">
             <option value="">Select…</option>
+            <option>-</option>
             <option>PA Submitted</option>
             <option>PA Answering Failed</option>
             <option>PA - Inprogress</option>
@@ -1274,6 +1279,7 @@
 
   function statusBadge(status) {
     const map = {
+      '-': ['badge-none', '—'],
       'PA Answering Failed': ['badge-af', 'Answering Failed'],
       'PA Ready to Review': ['badge-rr', 'Ready to Review'],
       'Denied': ['badge-den', 'Denied'],
