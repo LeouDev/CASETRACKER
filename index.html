@@ -1018,6 +1018,11 @@
           <strong>Rocky Mountain MS Clinic</strong>
           <span class="account-username">shealthrmmsc</span>
         </span>
+        <div class="accounts-strip-divider"></div>
+        <span class="account-tag">
+          <strong>Advanced Neurology of Colorado</strong>
+          <span class="account-username">shealthanc</span>
+        </span>
       </div>
 
       <!-- SUMMARY CARDS -->
@@ -1132,7 +1137,7 @@
           <label class="form-label">Status After Action</label>
           <select class="form-select" id="f-after">
             <option value="">Select…</option>
-            <option>-</option>
+            <option selected>-</option>
             <option>PA Submitted</option>
             <option>PA Answering Failed</option>
             <option>PA - Inprogress</option>
@@ -1541,7 +1546,7 @@
       document.getElementById(id).value = '';
     });
     document.getElementById('f-initial').value = '';
-    document.getElementById('f-after').value = '';
+    document.getElementById('f-after').value = '-';
   }
 
   function closeModal() {
